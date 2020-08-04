@@ -1,0 +1,14 @@
+C:\Users\judyt\source\repos\P2P\P2P\bin\Debug\P2P.exe.config
+C:\Users\judyt\source\repos\P2P\P2P\bin\Debug\P2P.exe
+C:\Users\judyt\source\repos\P2P\P2P\bin\Debug\P2P.pdb
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.csprojAssemblyReference.cache
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Properties.Resources.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Receiver.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Sender.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.csproj.GenerateResource.cache
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.csproj.CoreCompileInputs.cache
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.exe
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.pdb
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.MainForm.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.AddNode.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.RemoveNode.resources
