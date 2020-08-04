@@ -17,7 +17,7 @@ namespace P2P
         public MainForm()
         {
             InitializeComponent();
-            HashTable = new DHT((int)Math.Pow(2,32));
+            HashTable = new DHT(10);
             HashTable.Add("1", "2");
         }
 

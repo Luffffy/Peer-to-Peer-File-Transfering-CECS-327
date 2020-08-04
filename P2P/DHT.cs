@@ -69,7 +69,15 @@ namespace P2P
 
         public string GetValue(string k)
         {
-            return HT[getIndex(k)].getValue();
+            if(HT[getIndex(k)] != null)
+            {
+                return HT[getIndex(k)].getValue();
+            }
+            else
+            {
+                return "";
+            }
+            
         }
 
         public bool Add(string k, string v)
@@ -102,10 +110,12 @@ namespace P2P
 
         public bool FindKey(string k)
         {
-            if (HT[getIndex(k)].getKey() == null)
+            if (HT[getIndex(k)] == null)
                 return false;
-            else
+            else if (HT[getIndex(k)].getKey() == k)
                 return true;
+            else
+                return false;
         }
 
         public List<string> getKeys()
