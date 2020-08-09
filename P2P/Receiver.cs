@@ -16,10 +16,13 @@ namespace P2P
         //tcp port
         const int PORT = 1723; 
         public DHT HT { get; set; }
+
+        public string folderName;
         public Receiver(DHT H)
         {
             InitializeComponent();
             HT = H;
+            folderName = "";
         }
 
         private void resetControls()
@@ -91,6 +94,27 @@ namespace P2P
             client.Close();
             MessageBox.Show("File successfully received");
             resetControls();
+        }
+
+        private void textBox1_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void textBox2_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] files = Directory.GetFiles(fbd.SelectedPath);
+                    folderName = fbd.SelectedPath;
+                    textBox2.Text = fbd.SelectedPath;
+                    //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
+                }
+            }
         }
     }
 }

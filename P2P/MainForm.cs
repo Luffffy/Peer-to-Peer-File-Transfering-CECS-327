@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,13 @@ namespace P2P
     {
         DHT HashTable;
 
+        string folderName;
         public MainForm()
         {
             InitializeComponent();
             HashTable = new DHT(10);
-            HashTable.Add("1", "2");
+            folderName = "";
+            //HashTable.Add("1", "2");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -66,6 +69,37 @@ namespace P2P
             this.Hide();
             x.ShowDialog();
             this.Show();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] files = Directory.GetFiles(fbd.SelectedPath);
+                    folderName = fbd.SelectedPath;
+                    button5.Text = fbd.SelectedPath;
+                    //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
+                }
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (folderName.Equals(""))
+            {
+                MessageBox.Show("Select a folder first!");
+            }
+            else
+            {
+                var x = new Sync(HashTable, folderName);
+                this.Hide();
+                x.ShowDialog();
+                this.Show();
+            }
         }
     }
 }

@@ -160,7 +160,7 @@
     <value>3</value>
   </data>
   <data name="textBox2.Text" xml:space="preserve">
-    <value>Click to select a file</value>
+    <value>Click to select a folder</value>
   </data>
   <data name="textBox2.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Center</value>

@@ -17,11 +17,13 @@ namespace P2P
     {
         const int PORT = 1723;
         public DHT HT { get; set; }
+
+        public string folderName;
         public Sender(DHT H)
         {
             InitializeComponent();
             HT = H;
-         
+            folderName = "";
         }
 
         void resetControls()
@@ -34,12 +36,25 @@ namespace P2P
 
         void textBox2_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
+           /* OpenFileDialog ofd = new OpenFileDialog();
             ofd.CheckFileExists = true;
             ofd.CheckPathExists = true;
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 textBox2.Text = ofd.FileName;
+            }
+           */
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] files = Directory.GetFiles(fbd.SelectedPath);
+                    folderName = fbd.SelectedPath;
+                    textBox2.Text = fbd.SelectedPath;
+                    //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
+                }
             }
         }
 
@@ -53,7 +68,8 @@ namespace P2P
             IPAddress address;
             FileInfo file;
             FileStream fileStream;
-            string ip = HT.GetValue(textBox1.ToString());
+            string ip = HT.GetValue(textBox1.Text);
+            MessageBox.Show(ip);
             if(ip == null)
             {
                 MessageBox.Show("Receiver does not exist");
@@ -64,6 +80,8 @@ namespace P2P
                 resetControls();
                 return;
             }
+
+            string[] filePaths = Directory.GetFiles(@"c:\CECS327\", "", SearchOption.AllDirectories);
             try
             {
                 file = new FileInfo(textBox2.Text);
@@ -93,7 +111,7 @@ namespace P2P
 
             // Send file info
             button1.Text = "Sending file info...";
-            { // This syntax sugar is awesome
+            {   //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
                 byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
                 byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
                 byte[] fileLength = BitConverter.GetBytes(file.Length);

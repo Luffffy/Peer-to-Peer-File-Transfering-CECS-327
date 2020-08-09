@@ -43,8 +43,8 @@ namespace P2P
         {
 
             BigInteger hashCode = Hashing(key);
-            int mod = (int)(hashCode % int.MaxValue);
-            int index = mod % capacity;
+            int mod = Math.Abs((int)(hashCode % int.MaxValue));
+            int index = (mod % capacity);
             return index;
         }
 
@@ -71,10 +71,12 @@ namespace P2P
         {
             if(HT[getIndex(k)] != null)
             {
+                int x = getIndex(k);
                 return HT[getIndex(k)].getValue();
             }
             else
             {
+                int x = getIndex(k);
                 return "";
             }
             
@@ -83,7 +85,8 @@ namespace P2P
         public bool Add(string k, string v)
         {
             if (HT[getIndex(k)] == null)
-            { 
+            {
+                int x = getIndex(k);
                 HT[getIndex(k)] = new Node(k,v);
                 size++;
                 return true;
@@ -108,9 +111,24 @@ namespace P2P
             }
         }
 
+        public string getKey(int index)
+        {
+            if (HT[index] != null)
+            {
+                //int x = getIndex(k);
+                return HT[index].getKey();
+            }
+            else
+            {
+                //int x = getIndex(k);
+                return "";
+            }
+        }
         public bool FindKey(string k)
         {
-            if (HT[getIndex(k)] == null)
+            var y = getIndex(k);
+            var x = HT[y];
+            if (x == null)
                 return false;
             else if (HT[getIndex(k)].getKey() == k)
                 return true;
