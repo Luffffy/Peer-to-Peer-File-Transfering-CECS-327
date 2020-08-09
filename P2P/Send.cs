@@ -36,7 +36,7 @@ namespace P2P
 
         protected override async void OnShown(EventArgs e)
         {
-            
+
             progressBar1.Style = ProgressBarStyle.Marquee;
             var IPs = HT.getValues();
 
@@ -65,12 +65,13 @@ namespace P2P
 
                     textBox1.Text = "Connecting...";
                     TcpClient client = new TcpClient();
-                    try
+                    await client.ConnectAsync(address, PORT);
+                    foreach (var n in filePaths)
                     {
-                        foreach (var n in filePaths)
+                        try
                         {
                             textBox1.Text = "Sending connecting info...";
-                            await client.ConnectAsync(address, PORT);
+                            
                             //await listener.ConnectAsync(localEndPoint);
                             //listener.SendFile(n);
                             textBox1.Text = "Sending connecting Info...";
@@ -98,7 +99,7 @@ namespace P2P
                             // for a new Client Connection 
                             textBox1.Text = "Sending...";
                             progressBar1.Style = ProgressBarStyle.Continuous;
-                            int read;
+                            int read = 0;
                             int totalWritten = 0;
                             byte[] buffer = new byte[32 * 1024]; // 32k chunks
                             while ((read = await fileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -107,30 +108,35 @@ namespace P2P
                                 totalWritten += read;
                                 progressBar1.Value = (int)((100d * totalWritten) / file.Length);
                             }
-
+                            int x = 2;
+                            //MessageBox.Show(read + " " + totalWritten);
+                            //listener.Shutdown(SocketShutdown.Both);
+                            listener.Close();
+                            //MessageBox.Show("Sending complete!");
+                            textBox1.Text = "Sending complete!";
+                            resetControls();
 
                         }
-                    }
-                    catch
-                    {
-                        MessageBox.Show("Error connecting to destination");
-                        resetControls();
-                        return;
-                    }
+                        catch(Exception E)
+                        {
+                            MessageBox.Show(E.ToString());
+                            resetControls();
+                            this.Close();
+                            return;
+                        }
 
-                    listener.Shutdown(SocketShutdown.Both);
-                    listener.Close();
-                    //MessageBox.Show("Sending complete!");
-                    textBox1.Text = "Sending complete!";
-                    resetControls();
 
+                    }
                 }
                 catch (Exception E)
                 {
                     MessageBox.Show(E.ToString());
+                    this.Close();
                     resetControls();
                 }
             }
+            MessageBox.Show("Close");
+            this.Close();
         }
     }
 }

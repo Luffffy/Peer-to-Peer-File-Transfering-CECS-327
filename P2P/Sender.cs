@@ -19,11 +19,11 @@ namespace P2P
         public DHT HT { get; set; }
 
         public string folderName;
-        public Sender(DHT H)
+        public Sender(DHT H, string n)
         {
             InitializeComponent();
             HT = H;
-            folderName = "";
+            folderName = n;
         }
 
         void resetControls()
@@ -68,7 +68,7 @@ namespace P2P
             IPAddress address;
             FileInfo file;
             FileStream fileStream;
-            string ip = HT.GetValue(textBox1.Text);
+            string ip = HT.getValues()[1];
             MessageBox.Show(ip);
             if(ip == null)
             {
@@ -81,7 +81,7 @@ namespace P2P
                 return;
             }
 
-            string[] filePaths = Directory.GetFiles(@"c:\CECS327\", "", SearchOption.AllDirectories);
+            string[] filePaths = Directory.GetFiles(folderName, "", SearchOption.AllDirectories);
             try
             {
                 file = new FileInfo(textBox2.Text);
@@ -120,6 +120,7 @@ namespace P2P
                 await ns.WriteAsync(fileName, 0, fileName.Length);
             }
 
+            /*
             // Get permissions
             button1.Text = "Getting permission...";
             {
@@ -132,7 +133,7 @@ namespace P2P
                     return;
                 }
             }
-
+            */
             // Sending
             button1.Text = "Sending...";
             progressBar1.Style = ProgressBarStyle.Continuous;

@@ -53,7 +53,7 @@ namespace P2P
             }
             else
             {
-                var x = new Receiver(HashTable);
+                var x = new Receive(HashTable, folderName);
                 this.Hide();
                 x.ShowDialog();
                 this.Show();
