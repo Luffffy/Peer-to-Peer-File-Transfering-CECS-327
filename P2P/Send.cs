@@ -1,44 +1,42 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
+using System.Net.Sockets;
+using System.IO;
+using System.Net;
 
 namespace P2P
 {
-    public partial class Sync : Form
+    public partial class Send : Form
     {
         const int PORT = 1723;
         public DHT HT { get; set; }
 
         public string folderName;
-        public Sync(DHT H, string f)
+        public Send(DHT H, string n)
         {
             InitializeComponent();
             HT = H;
-            folderName = f;
-        }
-        private void resetControls()
-        {
-            textBox1.Text = "";
-            progressBar1.Style = ProgressBarStyle.Blocks;
-
+            folderName = n;
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        void resetControls()
         {
+            //textBox1.Enabled = textBox2.Enabled = button1.Enabled = true;
+            textBox1.Text = "Waiting for Connection";
+            progressBar1.Value = 0;
+            progressBar1.Style = ProgressBarStyle.Continuous;
+        }
 
-            button1.Enabled = button2.Enabled = false;
+        protected override async void OnShown(EventArgs e)
+        {
+            
             progressBar1.Style = ProgressBarStyle.Marquee;
             var IPs = HT.getValues();
 
@@ -69,13 +67,11 @@ namespace P2P
                     TcpClient client = new TcpClient();
                     try
                     {
-                        textBox1.Text = "Sending connecting info...";
-                        await client.ConnectAsync(address, PORT);
-                        //await listener.ConnectAsync(localEndPoint);
                         foreach (var n in filePaths)
                         {
-
-
+                            textBox1.Text = "Sending connecting info...";
+                            await client.ConnectAsync(address, PORT);
+                            //await listener.ConnectAsync(localEndPoint);
                             //listener.SendFile(n);
                             textBox1.Text = "Sending connecting Info...";
                             NetworkStream ns = client.GetStream();
@@ -100,7 +96,7 @@ namespace P2P
                             // Close() method. After closing, 
                             // we can use the closed Socket  
                             // for a new Client Connection 
-                            button1.Text = "Sending...";
+                            textBox1.Text = "Sending...";
                             progressBar1.Style = ProgressBarStyle.Continuous;
                             int read;
                             int totalWritten = 0;
@@ -119,7 +115,6 @@ namespace P2P
                     {
                         MessageBox.Show("Error connecting to destination");
                         resetControls();
-                        button1.Enabled = button2.Enabled = true;
                         return;
                     }
 
@@ -128,93 +123,14 @@ namespace P2P
                     //MessageBox.Show("Sending complete!");
                     textBox1.Text = "Sending complete!";
                     resetControls();
-                    button1.Text = "Click to start sending";
 
                 }
                 catch (Exception E)
                 {
                     MessageBox.Show(E.ToString());
-                    button1.Enabled = button2.Enabled = true;
-                    button1.Text = "Click to start sending";
-                }
-            }
-            //button1.Enabled = button2.Enabled = true;
-        }
-
-
-
-        private async void button2_Click(object sender, EventArgs e)
-        {
-            bool receiving = true;
-
-            //TcpListener listener = TcpListener.Create(PORT);
-            TcpClient client;
-            FileStream fs;
-            while (receiving)
-            {
-                receiving = true;
-                button1.Enabled = false;
-
-
-                try
-                {
-
-
-
-                    button2.Text = "Click to stop receiving";
-                    TcpListener listener = TcpListener.Create(PORT);
-                    listener.Start();
-                    textBox1.Text = "Waiting for connection";
-
-                    client = await listener.AcceptTcpClientAsync();
-                    NetworkStream ns = client.GetStream();
-                    textBox1.Text = "Client connected. Starting to receive the file";
-                    long fileLength;
-                    string fileName;
-                    byte[] fileNameBytes;
-                    byte[] fileNameLengthBytes = new byte[4]; //int32
-                    byte[] fileLengthBytes = new byte[8]; //int64
-
-                    await ns.ReadAsync(fileLengthBytes, 0, 8); // int64
-                    await ns.ReadAsync(fileNameLengthBytes, 0, 4); // int32
-                    fileNameBytes = new byte[BitConverter.ToInt32(fileNameLengthBytes, 0)];
-                    await ns.ReadAsync(fileNameBytes, 0, fileNameBytes.Length);
-
-                    fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
-                    fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
-
-                    textBox1.Text = "Receiving...";
-                    progressBar1.Style = ProgressBarStyle.Continuous;
-                    progressBar1.Value = 0;
-                    int read;
-                    int totalRead = 0;
-                    byte[] buffer = new byte[32 * 1024];
-                    fs = File.Open(folderName + fileName, FileMode.Create);
-
-                    while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                    {
-                        await fs.WriteAsync(buffer, 0, read);
-                        totalRead += read;
-                        progressBar1.Value = (int)((100d * totalRead) / fileLength);
-                    }
-
-                    fs.Dispose();
-                    client.Close();
                     resetControls();
-                    button1.Enabled = button2.Enabled = true;
-                }
-                catch (Exception E)
-                {
-
-                    MessageBox.Show(E.ToString());
                 }
             }
-
-
-            button2.Text = "Click to start receiving";
-            resetControls();
-            button1.Enabled = button2.Enabled = true;
-
         }
     }
 }

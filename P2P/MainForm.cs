@@ -31,9 +31,13 @@ namespace P2P
             {
                 MessageBox.Show("Add a Node first!");
             }
+            if (folderName.Equals(""))
+            {
+                MessageBox.Show("Select a folder first!");
+            }
             else
             {
-                var x = new Sender(HashTable);
+                var x = new Send(HashTable, folderName);
                 this.Hide();
                 //MessageBox.Show(x.HT.getKeys().ToString());
                 x.ShowDialog();
