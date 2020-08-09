@@ -13,15 +13,19 @@ using System.Windows.Forms;
 namespace P2P
 {
 
-    
+
     public class DHT
     {
         private Node[] HT;
         private int size;
         private int capacity;
+        private List<string> keys;
+        private List<string> values;
         public DHT(int c)
         {
             HT = new Node[c];
+            keys = new List<string>();
+            values = new List<string>();
             size = 0;
             capacity = c;
 
@@ -31,7 +35,7 @@ namespace P2P
 
         public int Size()
         {
-            return size; 
+            return size;
         }
 
         public bool isEmpty()
@@ -69,7 +73,7 @@ namespace P2P
 
         public string GetValue(string k)
         {
-            if(HT[getIndex(k)] != null)
+            if (HT[getIndex(k)] != null)
             {
                 int x = getIndex(k);
                 return HT[getIndex(k)].getValue();
@@ -79,7 +83,7 @@ namespace P2P
                 int x = getIndex(k);
                 return "";
             }
-            
+
         }
 
         public bool Add(string k, string v)
@@ -87,7 +91,8 @@ namespace P2P
             if (HT[getIndex(k)] == null)
             {
                 int x = getIndex(k);
-                HT[getIndex(k)] = new Node(k,v);
+                HT[getIndex(k)] = new Node(k, v);
+                keys.Add(k);
                 size++;
                 return true;
             }
@@ -138,14 +143,17 @@ namespace P2P
 
         public List<string> getKeys()
         {
+            return keys;
+        }
+
+        public List<string> getValues()
+        {
             List<string> temp = new List<string>();
-            foreach(var n in HT)
-            {
-                temp.Add(n.getKey());
-            }
+            foreach (var k in keys)
+                temp.Add(GetValue(k));
             return temp;
         }
     }
 
-    
+
 }

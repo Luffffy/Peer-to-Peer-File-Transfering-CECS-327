@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace P2P
 {
+    //192.168.1.61 / 184
     public partial class MainForm : Form
     {
         DHT HashTable;
@@ -21,7 +22,7 @@ namespace P2P
             InitializeComponent();
             HashTable = new DHT(10);
             folderName = "";
-            //HashTable.Add("1", "2");
+            HashTable.Add("Laptop", "192.168.1.184");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -92,6 +93,10 @@ namespace P2P
             if (folderName.Equals(""))
             {
                 MessageBox.Show("Select a folder first!");
+            }
+            else if(HashTable.isEmpty())
+            {
+                MessageBox.Show("Add a Node first!");
             }
             else
             {
