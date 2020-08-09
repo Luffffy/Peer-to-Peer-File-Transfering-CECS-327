@@ -31,7 +31,6 @@ namespace P2P
         private void resetControls()
         {
             progressBar1.Style = ProgressBarStyle.Marquee;
-            textBox1.Text = "Waiting to connect to Sender";
 
         }
 
@@ -69,6 +68,7 @@ namespace P2P
                     TcpClient client = new TcpClient();
                     try
                     {
+                        textBox1.Text = "Sending connecting info...";
                         await client.ConnectAsync(address, PORT);
                         //await listener.ConnectAsync(localEndPoint);
                         foreach (var n in filePaths)
@@ -76,7 +76,7 @@ namespace P2P
 
 
                             //listener.SendFile(n);
-
+                            textBox1.Text = "Sending connecting Info...";
                             NetworkStream ns = client.GetStream();
                             FileInfo file;
                             FileStream fileStream;
@@ -121,6 +121,7 @@ namespace P2P
                     {
                         MessageBox.Show("Error connecting to destination");
                         resetControls();
+                        button1.Enabled = button2.Enabled = true;
                         return;
                     }
 
@@ -130,6 +131,7 @@ namespace P2P
                 catch (Exception E)
                 {
                     MessageBox.Show(E.ToString());
+                    button1.Enabled = button2.Enabled = true;
                 }
             }
             button1.Enabled = button2.Enabled = true;
@@ -140,9 +142,10 @@ namespace P2P
         private async void button2_Click(object sender, EventArgs e)
         {
             button1.Enabled = button2.Enabled = false;
-            textBox1.Text = "Waiting for connection";
+
             TcpListener listener = TcpListener.Create(PORT);
             listener.Start();
+            textBox1.Text = "Waiting for connection";
 
             TcpClient client = await listener.AcceptTcpClientAsync();
             NetworkStream ns = client.GetStream();
@@ -161,13 +164,20 @@ namespace P2P
             fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
             fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
 
+
+            // Get permission
+            if (MessageBox.Show(String.Format("Requesting permission to receive file:\r\n\r\n{0}\r\n{1} bytes long", fileName, fileLength), "", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            {
+                return;
+            }
+
             textBox1.Text = "Receiving...";
             progressBar1.Style = ProgressBarStyle.Continuous;
             progressBar1.Value = 0;
             int read;
             int totalRead = 0;
             byte[] buffer = new byte[32 * 1024];
-            FileStream fs = File.Open(folderName, FileMode.Create);
+            FileStream fs = File.Open(folderName + fileName, FileMode.Create);
 
             while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
             {
