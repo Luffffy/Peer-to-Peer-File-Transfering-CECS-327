@@ -64,14 +64,18 @@ namespace P2P
                 {
 
                     textBox1.Text = "Connecting...";
+                    int x = 0;
                     TcpClient client = new TcpClient();
                     await client.ConnectAsync(address, PORT);
                     foreach (var n in filePaths)
                     {
+
+                        x++;
                         try
                         {
-                            textBox1.Text = "Sending connecting info...";
                             
+                            textBox1.Text = "Sending connecting info...";
+
                             //await listener.ConnectAsync(localEndPoint);
                             //listener.SendFile(n);
                             textBox1.Text = "Sending connecting Info...";
@@ -81,6 +85,17 @@ namespace P2P
                             file = new FileInfo(n);
                             fileStream = file.OpenRead();
 
+
+                            textBox1.Text = "Seeing if receiver is ready";
+                            byte[] permission = new byte[1];
+                            await ns.ReadAsync(permission, 0, 1);
+                            while (permission[0] != 4)
+                            {
+                                await ns.ReadAsync(permission, 0, 1);
+                                textBox1.Text = "Receiver Not Ready";
+                            }
+                            ns.WriteByte(1);
+                            permission[0] = 0;
                             // Send file info
                             textBox1.Text = "Sending file info...";
                             {   //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
@@ -91,6 +106,7 @@ namespace P2P
                                 await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
                                 await ns.WriteAsync(fileName, 0, fileName.Length);
                             }
+
 
 
                             // Close client Socket using the 
@@ -108,33 +124,47 @@ namespace P2P
                                 totalWritten += read;
                                 progressBar1.Value = (int)((100d * totalWritten) / file.Length);
                             }
-                            int x = 2;
+
+                            
+                            textBox1.Text = "Seeing if receiver is done";
+                            byte[] sent = new byte[1];
+                            await ns.ReadAsync(sent, 0, 1);
+                            while (sent[0] != 4)
+                            {
+                                await ns.ReadAsync(sent, 0, 1);
+                                textBox1.Text = "Receiver Not Done";
+                            }
+                            ns.WriteByte(1);
+                            
+
+                            //ns.WriteByte(0);
                             //MessageBox.Show(read + " " + totalWritten);
                             //listener.Shutdown(SocketShutdown.Both);
-                            listener.Close();
+                            
                             //MessageBox.Show("Sending complete!");
                             textBox1.Text = "Sending complete!";
                             resetControls();
+                            
+
 
                         }
-                        catch(Exception E)
+                        catch (Exception E)
                         {
                             MessageBox.Show(E.ToString());
                             resetControls();
-                            this.Close();
-                            return;
                         }
-
-
+                        
+                        //listener.Shutdown(SocketShutdown.Both);
                     }
                 }
                 catch (Exception E)
                 {
                     MessageBox.Show(E.ToString());
-                    this.Close();
                     resetControls();
                 }
+                listener.Close();
             }
+
             MessageBox.Show("Close");
             this.Close();
         }

@@ -22,7 +22,8 @@ namespace P2P
             InitializeComponent();
             HashTable = new DHT(10);
             folderName = "";
-            HashTable.Add("Laptop", "192.168.1.184");
+            //HashTable.Add("Laptop", "192.168.1.184");
+            //HashTable.Add("Desktop", "192.168.1.61");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -37,7 +38,7 @@ namespace P2P
             }
             else
             {
-                var x = new Sender(HashTable, folderName);
+                var x = new Send(HashTable, folderName);
                 this.Hide();
                 //MessageBox.Show(x.HT.getKeys().ToString());
                 x.ShowDialog();
@@ -53,7 +54,7 @@ namespace P2P
             }
             else
             {
-                var x = new Receiver(HashTable, folderName);
+                var x = new Receive(HashTable, folderName);
                 this.Hide();
                 x.ShowDialog();
                 this.Show();
