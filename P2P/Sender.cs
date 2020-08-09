@@ -44,15 +44,15 @@ namespace P2P
                 textBox2.Text = ofd.FileName;
             }
            */
-            using (var fbd = new FolderBrowserDialog())
+            using (var fbd = new OpenFileDialog())
             {
                 DialogResult result = fbd.ShowDialog();
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.FileName))
                 {
-                    string[] files = Directory.GetFiles(fbd.SelectedPath);
-                    folderName = fbd.SelectedPath;
-                    textBox2.Text = fbd.SelectedPath;
+                    //string[] files = Directory.GetFiles(fbd.SelectedPath);
+                    folderName = fbd.FileName;
+                    textBox2.Text = fbd.FileName;
                     //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
                 }
             }
@@ -68,7 +68,7 @@ namespace P2P
             IPAddress address;
             FileInfo file;
             FileStream fileStream;
-            string ip = HT.getValues()[1];
+            string ip = HT.getValues()[0];
             MessageBox.Show(ip);
             if(ip == null)
             {

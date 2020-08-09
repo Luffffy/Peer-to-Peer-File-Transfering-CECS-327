@@ -34,16 +34,19 @@ namespace P2P
 
         protected override async void OnShown(EventArgs e)
         {
+            TcpListener listener = TcpListener.Create(PORT);
+            listener.Start();
+
+            textBox1.Text = "Waiting for connection";
+
+            TcpClient client = await listener.AcceptTcpClientAsync();
+            NetworkStream ns = client.GetStream();
             while (true)
             {
+
                 try
                 {
-                    TcpListener listener = TcpListener.Create(PORT);
-                    listener.Start();
-                    textBox1.Text = "Waiting for connection";
 
-                    TcpClient client = await listener.AcceptTcpClientAsync();
-                    NetworkStream ns = client.GetStream();
                     textBox1.Text = "Client connected. Starting to receive the file";
                     long fileLength;
                     string fileName;
@@ -65,7 +68,7 @@ namespace P2P
                     int read;
                     int totalRead = 0;
                     byte[] buffer = new byte[32 * 1024];
-                    FileStream fs = File.Open(folderName + fileName, FileMode.Create);
+                    FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.Create);
 
                     while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
@@ -81,6 +84,9 @@ namespace P2P
                 catch (Exception E)
                 {
 
+                    fs.Dispose();
+                    client.Close();
+                    resetControls();
                     MessageBox.Show(E.ToString());
                 }
             }

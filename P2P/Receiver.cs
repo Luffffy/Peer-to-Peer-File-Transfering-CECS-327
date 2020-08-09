@@ -18,11 +18,11 @@ namespace P2P
         public DHT HT { get; set; }
 
         public string folderName;
-        public Receiver(DHT H)
+        public Receiver(DHT H, string n)
         {
             InitializeComponent();
             HT = H;
-            folderName = "";
+            folderName = n;
         }
 
         private void resetControls()

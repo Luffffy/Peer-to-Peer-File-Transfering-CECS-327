@@ -14,3 +14,4 @@ C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.AddNode.resources
 C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.RemoveNode.resources
 C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Sync.resources
 C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Send.resources
+C:\Users\judyt\source\repos\P2P\P2P\obj\Debug\P2P.Receive.resources
