@@ -64,21 +64,21 @@ namespace P2P
                 {
 
                     textBox1.Text = "Connecting...";
-                    int x = 0;
+                    int x = 1;
+                    int totalFiles = filePaths.Length;
                     TcpClient client = new TcpClient();
                     await client.ConnectAsync(address, PORT);
                     foreach (var n in filePaths)
                     {
 
                         x++;
+                        string progress = x + "/" + totalFiles;
                         try
                         {
-                            
-                            textBox1.Text = "Sending connecting info...";
 
                             //await listener.ConnectAsync(localEndPoint);
                             //listener.SendFile(n);
-                            textBox1.Text = "Sending connecting Info...";
+                            textBox1.Text = "Sending connecting Info..." + progress;
                             NetworkStream ns = client.GetStream();
                             FileInfo file;
                             FileStream fileStream;
@@ -86,25 +86,32 @@ namespace P2P
                             fileStream = file.OpenRead();
 
 
-                            textBox1.Text = "Seeing if receiver is ready";
+                            textBox1.Text = "Seeing if receiver is ready" + progress;
                             byte[] permission = new byte[1];
                             await ns.ReadAsync(permission, 0, 1);
                             while (permission[0] != 4)
                             {
+                                textBox1.Text = "Receiver Not Ready" + progress;
                                 await ns.ReadAsync(permission, 0, 1);
-                                textBox1.Text = "Receiver Not Ready";
+                                
                             }
                             ns.WriteByte(1);
                             permission[0] = 0;
                             // Send file info
-                            textBox1.Text = "Sending file info...";
+                            textBox1.Text = "Sending file info..." + progress;
                             {   //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
                                 byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
                                 byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
                                 byte[] fileLength = BitConverter.GetBytes(file.Length);
+                                byte[] fileDateTime = ASCIIEncoding.ASCII.GetBytes(file.LastWriteTime.ToString());
+                                byte[] fileDateTimeLength = BitConverter.GetBytes(file.LastWriteTime.ToString().Length);
+                                //byte[] fileLastModified = BitConverter.GetBytes(file.LastWriteTime.Ticks);
                                 await ns.WriteAsync(fileLength, 0, fileLength.Length);
                                 await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
                                 await ns.WriteAsync(fileName, 0, fileName.Length);
+                                await ns.WriteAsync(fileDateTimeLength, 0, fileDateTimeLength.Length);
+                                await ns.WriteAsync(fileDateTime, 0, fileDateTime.Length);
+                                //await ns.WriteAsync(fileLastModified, 0, fileLastModified.Length);
                             }
 
 
@@ -113,7 +120,7 @@ namespace P2P
                             // Close() method. After closing, 
                             // we can use the closed Socket  
                             // for a new Client Connection 
-                            textBox1.Text = "Sending...";
+                            textBox1.Text = "Sending..." + progress;
                             progressBar1.Style = ProgressBarStyle.Continuous;
                             int read = 0;
                             int totalWritten = 0;
@@ -126,13 +133,13 @@ namespace P2P
                             }
 
                             
-                            textBox1.Text = "Seeing if receiver is done";
+                            textBox1.Text = "Seeing if receiver is done" + progress;
                             byte[] sent = new byte[1];
                             await ns.ReadAsync(sent, 0, 1);
                             while (sent[0] != 4)
                             {
                                 await ns.ReadAsync(sent, 0, 1);
-                                textBox1.Text = "Receiver Not Done";
+                                textBox1.Text = "Receiver Not Done" + progress;
                             }
                             ns.WriteByte(1);
                             
@@ -142,7 +149,7 @@ namespace P2P
                             //listener.Shutdown(SocketShutdown.Both);
                             
                             //MessageBox.Show("Sending complete!");
-                            textBox1.Text = "Sending complete!";
+                            textBox1.Text = "Sending complete! + progress";
                             resetControls();
                             
 

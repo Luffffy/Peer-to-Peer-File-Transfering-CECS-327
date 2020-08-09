@@ -32,18 +32,22 @@ namespace P2P
             {
                 MessageBox.Show("Add a Node first!");
             }
-            if (folderName.Equals(""))
-            {
-                MessageBox.Show("Select a folder first!");
-            }
             else
             {
-                var x = new Send(HashTable, folderName);
-                this.Hide();
-                //MessageBox.Show(x.HT.getKeys().ToString());
-                x.ShowDialog();
-                this.Show();
+                if (folderName.Equals(""))
+                {
+                    MessageBox.Show("Select a folder first!");
+                }
+                else
+                {
+                    var x = new Send(HashTable, folderName);
+                    this.Hide();
+                    //MessageBox.Show(x.HT.getKeys().ToString());
+                    x.ShowDialog();
+                    this.Show();
+                }
             }
+
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -54,10 +58,17 @@ namespace P2P
             }
             else
             {
-                var x = new Receive(HashTable, folderName);
-                this.Hide();
-                x.ShowDialog();
-                this.Show();
+                if (folderName.Equals(""))
+                {
+                    MessageBox.Show("Select a folder first!");
+                }
+                else
+                {
+                    var x = new Receive(HashTable, folderName);
+                    this.Hide();
+                    x.ShowDialog();
+                    this.Show();
+                }
             }
         }
 
@@ -66,7 +77,7 @@ namespace P2P
             var x = new AddNode(HashTable);
             this.Hide();
             x.ShowDialog();
-            this.Show();            
+            this.Show();
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -99,7 +110,7 @@ namespace P2P
             {
                 MessageBox.Show("Select a folder first!");
             }
-            else if(HashTable.isEmpty())
+            else if (HashTable.isEmpty())
             {
                 MessageBox.Show("Add a Node first!");
             }
