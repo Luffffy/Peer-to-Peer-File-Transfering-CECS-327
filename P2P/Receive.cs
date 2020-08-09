@@ -48,6 +48,16 @@ namespace P2P
                 {
 
                     textBox1.Text = "Client connected. Starting to receive the file";
+
+                    ns.WriteByte(4);
+                    byte[] permission = new byte[1];
+                    await ns.ReadAsync(permission, 0, 1);
+                    while (permission[0] != 1)
+                    {
+                        await ns.ReadAsync(permission, 0, 1);
+                        textBox1.Text = "Waiting for response from Sender";
+                    }
+                    permission[0] = 0;
                     long fileLength;
                     string fileName;
                     byte[] fileNameBytes;
@@ -62,33 +72,61 @@ namespace P2P
                     fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
                     fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
 
+                    
                     textBox1.Text = "Receiving...";
                     progressBar1.Style = ProgressBarStyle.Continuous;
                     progressBar1.Value = 0;
-                    int read;
+                    int read = 0;
                     int totalRead = 0;
                     byte[] buffer = new byte[32 * 1024];
-                    FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.Create);
 
-                    while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    /*
+                    if(File.Exists(folderName + "\\" + fileName))
                     {
-                        await fs.WriteAsync(buffer, 0, read);
-                        totalRead += read;
-                        progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                        fs = File.Open(folderName + "\\" + fileName, FileMode.Append);
+                    }
+                    else */
+                    using (FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.Append, FileAccess.Write)) 
+                    {
+                        while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fs.WriteAsync(buffer, 0, read);
+                            totalRead += read;
+                            int a = (int)((100d * totalRead) / fileLength);
+                            if (a == 100)
+                                break;
+                            //progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                        }
+                    }
+                    
+                    textBox1.Text = "Done Receiving...";
+                    ns.WriteByte(4);
+                    byte[] received = new byte[1];
+                    await ns.ReadAsync(received, 0, 1);
+                    while (received[0] != 1)
+                    {
+                        await ns.ReadAsync(received, 0, 1);
+                        textBox1.Text = "Waiting for response from Sender";
                     }
 
-                    fs.Dispose();
-                    client.Close();
+                    //fs.Dispose();
+                    //client.Close();
                     resetControls();
+
+                   
                 }
                 catch (Exception E)
                 {
 
-                    fs.Dispose();
+                    //fs.Dispose();
                     client.Close();
+                    listener.Stop();
                     resetControls();
+                    this.Close();
                     MessageBox.Show(E.ToString());
+                    return;
                 }
+
             }
         }
 
