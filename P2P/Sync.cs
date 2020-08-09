@@ -32,135 +32,116 @@ namespace P2P
         {
             progressBar1.Style = ProgressBarStyle.Marquee;
             textBox1.Text = "Waiting to connect to Sender";
+            
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
+            button1.Enabled = button2.Enabled = false;
             // Establish the local endpoint  
             // for the socket. Dns.GetHostName 
             // returns the name of the host  
             // running the application. 
+            int PORT = 1723;
             IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddr = ipHost.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddr, 1723);
+            IPAddress ip = ipHost.AddressList[0];
+            IPEndPoint localEndPoint = new IPEndPoint(ip, PORT);
+            
 
             // Creation TCP/IP Socket using  
             // Socket Class Costructor 
-            Socket listener = new Socket(AddressFamily.InterNetwork,
-                         SocketType.Stream, ProtocolType.IP);
+            Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
             string[] filePaths = Directory.GetFiles(folderName);
 
             try
             {
-                foreach (var n in filePaths)
+
+                button1.Text = "Connecting...";
+                //TcpClient client = new TcpClient();
+                try
                 {
-                    string filePath = "";
-                    string fileName = n.Replace("\\", "/");
-
-                    while (fileName.IndexOf("/") > -1)
+                    //await client.ConnectAsync(ip, PORT);
+                    await listener.ConnectAsync(localEndPoint);
+                    foreach (var n in filePaths)
                     {
-                        filePath += fileName.Substring(0, fileName.IndexOf("/") + 1);
-                        fileName = fileName.Substring(fileName.IndexOf("/") + 1);
+
+
+                        listener.SendFile(n);
+
+
+                        // Close client Socket using the 
+                        // Close() method. After closing, 
+                        // we can use the closed Socket  
+                        // for a new Client Connection 
+
+                        listener.Shutdown(SocketShutdown.Both);
+                        listener.Close();
+                        MessageBox.Show("Sending complete!");
+                        resetControls();
                     }
-                    byte[] fileNameByte = Encoding.ASCII.GetBytes(fileName);
-                    if (fileNameByte.Length > 850 * 1024)
-                    {
-                        MessageBox.Show("File size is more than 850kb, please try with small file.");
-                        return;
-                    }
-
-                    byte[] fileData = File.ReadAllBytes(filePath + fileName);
-
-                    byte[] clientData = new byte[4 + fileNameByte.Length + fileData.Length];
-
-                    byte[] fileNameLen = BitConverter.GetBytes(fileNameByte.Length);
-                    /* File name length’s binary data. */
-                    fileNameLen.CopyTo(clientData, 0);
-                    fileNameByte.CopyTo(clientData, 4);
-                    fileData.CopyTo(clientData, 4 + fileNameByte.Length);
-
-
-                    // Close client Socket using the 
-                    // Close() method. After closing, 
-                    // we can use the closed Socket  
-                    // for a new Client Connection 
-
-                    listener.Shutdown(SocketShutdown.Both);
-                    listener.Close();
-                    MessageBox.Show("Sending complete!");
+                }
+                catch
+                {
+                    MessageBox.Show("Error connecting to destination");
                     resetControls();
-                }
-            
-            }
-            catch(Exception E)
-            {
-                MessageBox.Show(E.ToString());
-            }
-        }
-
-
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            try
-            {
-
-                // Establish the remote endpoint  
-                // for the socket. This example  
-                // uses port 11111 on the local  
-                // computer. 
-                IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                IPAddress ipAddr = ipHost.AddressList[0];
-                IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 1723);
-
-                // Creation TCP/IP Socket using  
-                // Socket Class Costructor 
-                Socket listener = new Socket(AddressFamily.InterNetwork,
-                           SocketType.Stream, ProtocolType.IP);
-
-                listener.Bind(localEndPoint);
-
-
-                List <FileInfo> files = new List<FileInfo>();
-                string[] filePaths = Directory.GetFiles(folderName, "", SearchOption.AllDirectories);
-                foreach (var n in filePaths)
-                {
-                    FileInfo temp = new FileInfo(n);
-                    files.Add(temp);
+                    return;
                 }
 
-                byte[] clientData = new byte[1024 * 5000];
-                int receivedBytesLen = listener.Receive(clientData);
-                textBox1.Text = "Receiving data...";
-                int fileNameLen = BitConverter.ToInt32(clientData, 0);
-                string fileName = Encoding.ASCII.GetString(clientData, 4, fileNameLen);
-
-                var x = files.Where(y => y.Equals(fileName)).SingleOrDefault();
-                if (x.Name.Equals(fileName) )
-                {
-
-                }
-                else
-                {
-                    BinaryWriter bWrite = new BinaryWriter(File.Open(folderName + "/" + fileName, FileMode.Append)); ;
-                    bWrite.Write(clientData, 4 + fileNameLen, receivedBytesLen - 4 - fileNameLen);
-
-                    textBox1.Text = "Saving file...";
-                    bWrite.Close();
-
-                }
-
-                listener.Close();
-                /* Close binary writer and client socket */
-                textBox1.Text = "Received & Saved file.";
+                
 
             }
             catch (Exception E)
             {
-                MessageBox.Show("Error Receiving File");
+                MessageBox.Show(E.ToString());
+            }
+            button1.Enabled = button2.Enabled = true;
+        }
+
+
+
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            button1.Enabled = button2.Enabled = false;
+            textBox1.Text = "Waiting for connection";
+            TcpListener listener = new TcpListener(IPAddress.Loopback, 11000);
+            listener.Start();
+
+            using (TcpClient client = listener.AcceptTcpClient())
+            using (NetworkStream ns = client.GetStream())
+            using (FileStream output = File.Create(folderName))
+            {
+                Console.WriteLine("Client connected. Starting to receive the file");
+
+                long fileLength;
+                string fileName;
+                byte[] fileNameBytes;
+                byte[] fileNameLengthBytes = new byte[4]; //int32
+                byte[] fileLengthBytes = new byte[8]; //int64
+
+                await ns.ReadAsync(fileLengthBytes, 0, 8); // int64
+                await ns.ReadAsync(fileNameLengthBytes, 0, 4); // int32
+                fileNameBytes = new byte[BitConverter.ToInt32(fileNameLengthBytes, 0)];
+                await ns.ReadAsync(fileNameBytes, 0, fileNameBytes.Length);
+
+                fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
+                fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
+
+                textBox1.Text = "Receiving...";
+                progressBar1.Style = ProgressBarStyle.Continuous;
+                progressBar1.Value = 0;
+                int read;
+                int totalRead = 0;
+                byte[] buffer = new byte[32 * 1024];
+                while ((read = ns.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    await output.WriteAsync(buffer, 0, read);
+                    totalRead += read;
+                    progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                }
             }
 
-            textBox1.Text = "Done receiving all files";
+            resetControls();
+            button1.Enabled = button2.Enabled = true;
         }
     }
 }
