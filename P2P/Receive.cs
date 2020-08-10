@@ -46,10 +46,8 @@ namespace P2P
 
                 try
                 {
-
                     textBox1.Text = "Client connected. Starting to receive the file";
-
-                    ns.WriteByte(4);
+                    ns.WriteByte(4); //Tells Sender receiver is ready
                     byte[] permission = new byte[1];
                     await ns.ReadAsync(permission, 0, 1);
                     while (permission[0] != 1)
@@ -57,19 +55,22 @@ namespace P2P
                         await ns.ReadAsync(permission, 0, 1);
                         textBox1.Text = "Waiting for response from Sender";
                     }
-                    permission[0] = 0;
+
                     long fileLength;
                     string fileName;
                     DateTime fileLastModified;
                     byte[] fileNameBytes;
-                    byte[] fileNameLengthBytes = new byte[4]; //int32
-                    byte[] fileLengthBytes = new byte[8]; //int64
+                    byte[] fileNameLengthBytes = new byte[4];
+                    byte[] fileLengthBytes = new byte[8];
                     byte[] fileDateTimeBytes;
                     byte[] fileDateTimeLengthBytes = new byte[4];
-                    await ns.ReadAsync(fileLengthBytes, 0, 8); // int64
-                    await ns.ReadAsync(fileNameLengthBytes, 0, 4); // int32
+
+                    await ns.ReadAsync(fileLengthBytes, 0, 8);
+
+                    await ns.ReadAsync(fileNameLengthBytes, 0, 4);
                     fileNameBytes = new byte[BitConverter.ToInt32(fileNameLengthBytes, 0)];
                     await ns.ReadAsync(fileNameBytes, 0, fileNameBytes.Length);
+
                     await ns.ReadAsync(fileDateTimeLengthBytes, 0, 4);
                     fileDateTimeBytes = new byte[BitConverter.ToInt32(fileDateTimeLengthBytes, 0)];
                     await ns.ReadAsync(fileDateTimeBytes, 0, fileDateTimeBytes.Length);
@@ -86,7 +87,7 @@ namespace P2P
                     progressBar1.Value = 0;
                     int read = 0;
                     int totalRead = 0;
-                    byte[] buffer = new byte[32 * 1024];
+                    byte[] buffer = new byte[32 * 1024]; // 32k chunks
 
 
                     if (File.Exists(folderName + "\\" + fileName))
@@ -94,12 +95,10 @@ namespace P2P
                         var existingLastModified = File.GetLastWriteTime(folderName + "\\" + fileName);
 
                         int compare = DateTime.Compare(existingLastModified, fileLastModified);
-                        if (compare < 0) //if Existing file is earlier than
+                        if (compare < 0) //if Existing file is earlier than delete and make a new file
                         {
                             File.Delete(folderName + "\\" + fileName);
                             FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
-                            //FileStream temp = File.Open(folderName + "\\" + fileName, FileMode.Open);
-                            //File.WriteAllText(folderName + "\\" + fileName, string.Empty);
                             while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
                             {
                                 await fs.WriteAsync(buffer, 0, read);
@@ -110,9 +109,9 @@ namespace P2P
                                 progressBar1.Value = (int)((100d * totalRead) / fileLength);
                             }
                         }
-                        else if (compare == 0) //if Existing file is same time
+                        else if (compare == 0) //if Existing file is same time do nothing
                         {
-                            //don't overwrite
+                            //don't overwrite, this is filler to get the async methods in sync
                             var tempFile = Path.GetTempFileName();
                             FileStream temp = File.Open(tempFile, FileMode.Open);
                             FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
@@ -123,12 +122,12 @@ namespace P2P
                                 int a = (int)((100d * totalRead) / fileLength);
                                 if (a == 100)
                                     break;
-                                //progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                                progressBar1.Value = (int)((100d * totalRead) / fileLength);
                             }
                         }
-                        else //if Existing file is later than
+                        else //if Existing file is later than do nothing
                         {
-                            //don't overwrite
+                            //don't overwrite, this is filler to get the async methods in sync
                             var tempFile = Path.GetTempFileName();
                             FileStream temp = File.Open(tempFile, FileMode.Open);
                             FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
@@ -139,7 +138,7 @@ namespace P2P
                                 int a = (int)((100d * totalRead) / fileLength);
                                 if (a == 100)
                                     break;
-                                //progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                                progressBar1.Value = (int)((100d * totalRead) / fileLength);
                             }
                         }
 

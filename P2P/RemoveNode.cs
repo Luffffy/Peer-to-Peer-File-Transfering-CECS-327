@@ -18,5 +18,26 @@ namespace P2P
             InitializeComponent();
             HT = H;
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string key = textBox1.Text;
+            //Nothing entered
+            if (key == "")
+            {
+                MessageBox.Show("Enter in a key to delete the value");
+            }
+            else
+            {
+                //if key exists remove
+                if (HT.Remove(key))
+                {
+                    MessageBox.Show("Key and Value Successfully Removed");
+                    this.Close();
+                }
+                else
+                    MessageBox.Show("Key does not exist");
+            }
+        }
     }
 }

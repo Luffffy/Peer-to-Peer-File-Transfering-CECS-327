@@ -20,12 +20,18 @@ namespace P2P
         public MainForm()
         {
             InitializeComponent();
+            //DHT size of 10
             HashTable = new DHT(10);
             folderName = "";
-            HashTable.Add("Laptop", "192.168.1.184");
+            //HashTable.Add("Laptop", "192.168.1.184");
             //HashTable.Add("Desktop", "192.168.1.61");
         }
 
+        /// <summary>
+        /// Send files
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button1_Click(object sender, EventArgs e)
         {
             if (HashTable.isEmpty())
@@ -49,7 +55,11 @@ namespace P2P
             }
 
         }
-
+        /// <summary>
+        /// Receive files
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button2_Click(object sender, EventArgs e)
         {
             if (HashTable.isEmpty())
@@ -72,6 +82,11 @@ namespace P2P
             }
         }
 
+        /// <summary>
+        /// Add Node
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button3_Click(object sender, EventArgs e)
         {
             var x = new AddNode(HashTable);
@@ -80,14 +95,31 @@ namespace P2P
             this.Show();
         }
 
+        /// <summary>
+        /// Remove Node
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button4_Click(object sender, EventArgs e)
         {
-            var x = new RemoveNode(HashTable);
-            this.Hide();
-            x.ShowDialog();
-            this.Show();
+            if (HashTable.isEmpty())
+            {
+                MessageBox.Show("No Nodes to Delete");
+            }
+            else
+            {
+                var x = new RemoveNode(HashTable);
+                this.Hide();
+                x.ShowDialog();
+                this.Show();
+            }
         }
 
+        /// <summary>
+        /// Select a Folder
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button5_Click(object sender, EventArgs e)
         {
             using (var fbd = new FolderBrowserDialog())
@@ -99,27 +131,7 @@ namespace P2P
                     string[] files = Directory.GetFiles(fbd.SelectedPath);
                     folderName = fbd.SelectedPath;
                     button5.Text = fbd.SelectedPath;
-                    //MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
                 }
-            }
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            if (folderName.Equals(""))
-            {
-                MessageBox.Show("Select a folder first!");
-            }
-            else if (HashTable.isEmpty())
-            {
-                MessageBox.Show("Add a Node first!");
-            }
-            else
-            {
-                var x = new Sync(HashTable, folderName);
-                this.Hide();
-                x.ShowDialog();
-                this.Show();
             }
         }
     }

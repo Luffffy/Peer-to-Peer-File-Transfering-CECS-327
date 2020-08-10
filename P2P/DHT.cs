@@ -12,8 +12,6 @@ using System.Windows.Forms;
 
 namespace P2P
 {
-
-
     public class DHT
     {
         private Node[] HT;
@@ -21,6 +19,10 @@ namespace P2P
         private int capacity;
         private List<string> keys;
         private List<string> values;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="c"></param>
         public DHT(int c)
         {
             HT = new Node[c];
@@ -33,16 +35,29 @@ namespace P2P
                 HT[i] = null;
         }
 
+        /// <summary>
+        /// returns size of DHT
+        /// </summary>
+        /// <returns></returns>
         public int Size()
         {
             return size;
         }
 
+        /// <summary>
+        /// returns true if empty
+        /// </summary>
+        /// <returns></returns>
         public bool isEmpty()
         {
             return Size() == 0;
         }
 
+        /// <summary>
+        /// gets index of node location
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public int getIndex(string key)
         {
 
@@ -52,6 +67,11 @@ namespace P2P
             return index;
         }
 
+        /// <summary>
+        /// does SHA256 Hashing
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         private BigInteger Hashing(string input)
         {
             using (SHA256 sha256Hash = SHA256.Create())
@@ -71,6 +91,11 @@ namespace P2P
             }
         }
 
+        /// <summary>
+        /// returns Value given a key
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public string GetValue(string k)
         {
             if (HT[getIndex(k)] != null)
@@ -86,6 +111,12 @@ namespace P2P
 
         }
 
+        /// <summary>
+        /// Adds in a node to the DHT
+        /// </summary>
+        /// <param name="k"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public bool Add(string k, string v)
         {
             if (HT[getIndex(k)] == null)
@@ -102,20 +133,32 @@ namespace P2P
             }
         }
 
+        /// <summary>
+        /// removes the key and value and sets it to null
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public bool Remove(string k)
         {
+            if(HT[getIndex(k)] == null)
+            {
+                //can't remove if DHT index is null
+                return false;
+            }
+
             if (HT[getIndex(k)].getKey() == k)
             {
-                HT[getIndex(k)].Set(null, null);
+                HT[getIndex(k)] = null;
                 size--;
                 return true;
             }
-            else
+            else //if DHT index is not empty and key does not exist
             {
                 return false;
             }
         }
 
+        /*
         public string getKey(int index)
         {
             if (HT[index] != null)
@@ -129,6 +172,13 @@ namespace P2P
                 return "";
             }
         }
+        */
+
+        /// <summary>
+        /// returns true if Key Exists
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public bool FindKey(string k)
         {
             var y = getIndex(k);
@@ -141,11 +191,19 @@ namespace P2P
                 return false;
         }
 
+        /// <summary>
+        /// gets all keys in a list
+        /// </summary>
+        /// <returns></returns>
         public List<string> getKeys()
         {
             return keys;
         }
 
+        /// <summary>
+        /// gets all values in a list
+        /// </summary>
+        /// <returns></returns>
         public List<string> getValues()
         {
             List<string> temp = new List<string>();

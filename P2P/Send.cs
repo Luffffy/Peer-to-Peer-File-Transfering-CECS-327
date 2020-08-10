@@ -19,6 +19,11 @@ namespace P2P
         public DHT HT { get; set; }
 
         public string folderName;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="H"></param>
+        /// <param name="n"></param>
         public Send(DHT H, string n)
         {
             InitializeComponent();
@@ -26,6 +31,9 @@ namespace P2P
             folderName = n;
         }
 
+        /// <summary>
+        /// Resets form's text
+        /// </summary>
         void resetControls()
         {
             textBox1.Text = "Waiting for Connection";
@@ -33,6 +41,10 @@ namespace P2P
             progressBar1.Style = ProgressBarStyle.Continuous;
         }
 
+        /// <summary>
+        /// Starts connecting and sending to client onShow and.
+        /// </summary>
+        /// <param name="e"></param>
         protected override async void OnShown(EventArgs e)
         {
 
@@ -48,109 +60,88 @@ namespace P2P
 
 
                 // Creation TCP/IP Socket using  
-                // Socket Class Costructor 
+                // Socket Class Constructor 
                 Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
+                
+                //Gets all File path names from selected folder
                 string[] filePaths = Directory.GetFiles(folderName);
-
 
                 try
                 {
                     textBox1.Text = "Connecting...";
-                    int x = 0;
+                    int currentFileNumber = 0;
                     int totalFiles = filePaths.Length;
+
                     TcpClient client = new TcpClient();
                     await client.ConnectAsync(address, PORT);
                     foreach (var n in filePaths)
                     {
+                        currentFileNumber++;
+                        string progress = currentFileNumber + "/" + totalFiles;
 
-                        x++;
-                        string progress = x + "/" + totalFiles;
-                        try
+                        textBox1.Text = "Sending connecting Info... " + progress;
+                        NetworkStream ns = client.GetStream();
+                        FileInfo file;
+                        FileStream fileStream;
+                        file = new FileInfo(n);
+                        fileStream = file.OpenRead();
+
+
+                        textBox1.Text = "Seeing if receiver is ready " + progress;
+                        byte[] permission = new byte[1];
+                        await ns.ReadAsync(permission, 0, 1);
+                        while (permission[0] != 4)
                         {
-                            textBox1.Text = "Sending connecting Info... " + progress;
-                            NetworkStream ns = client.GetStream();
-                            FileInfo file;
-                            FileStream fileStream;
-                            file = new FileInfo(n);
-                            fileStream = file.OpenRead();
-
-
-                            textBox1.Text = "Seeing if receiver is ready " + progress;
-                            byte[] permission = new byte[1];
+                            textBox1.Text = "Receiver Not Ready " + progress;
                             await ns.ReadAsync(permission, 0, 1);
-                            while (permission[0] != 4)
-                            {
-                                textBox1.Text = "Receiver Not Ready " + progress;
-                                await ns.ReadAsync(permission, 0, 1);
-
-                            }
-                            ns.WriteByte(1);
-                            permission[0] = 0;
-                            // Send file info
-                            textBox1.Text = "Sending file info... " + progress;
-                            //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
-                            byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
-                            byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
-                            byte[] fileLength = BitConverter.GetBytes(file.Length);
-                            string DateTime = file.LastWriteTime.ToString();
-                            byte[] fileDateTime = ASCIIEncoding.ASCII.GetBytes(DateTime);
-                            byte[] fileDateTimeLength = BitConverter.GetBytes(DateTime.Length);
-
-                            await ns.WriteAsync(fileLength, 0, fileLength.Length);
-                            await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
-                            await ns.WriteAsync(fileName, 0, fileName.Length);
-                            await ns.WriteAsync(fileDateTimeLength, 0, fileDateTimeLength.Length);
-                            await ns.WriteAsync(fileDateTime, 0, fileDateTime.Length);
-
-
-
-
-                            // Close client Socket using the 
-                            // Close() method. After closing, 
-                            // we can use the closed Socket  
-                            // for a new Client Connection 
-                            textBox1.Text = "Sending..." + progress;
-                            progressBar1.Style = ProgressBarStyle.Continuous;
-                            int read = 0;
-                            int totalWritten = 0;
-                            byte[] buffer = new byte[32 * 1024]; // 32k chunks
-                            while ((read = await fileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                            {
-                                await ns.WriteAsync(buffer, 0, read);
-                                totalWritten += read;
-                                progressBar1.Value = (int)((100d * totalWritten) / file.Length);
-                            }
-
-
-                            textBox1.Text = "Seeing if receiver is done " + progress;
-                            byte[] sent = new byte[1];
-                            await ns.ReadAsync(sent, 0, 1);
-                            while (sent[0] != 4)
-                            {
-                                await ns.ReadAsync(sent, 0, 1);
-                                textBox1.Text = "Receiver Not Done " + progress;
-                            }
-                            ns.WriteByte(1);
-
-
-                            //ns.WriteByte(0);
-                            //MessageBox.Show(read + " " + totalWritten);
-                            //listener.Shutdown(SocketShutdown.Both);
-
-                            //MessageBox.Show("Sending complete!");
-                            textBox1.Text = "Sending complete! " + progress;
-                            resetControls();
-
-
 
                         }
-                        catch (Exception E)
+                        ns.WriteByte(1);// Tells receiver sender is ready
+                        permission[0] = 0;
+
+                        // Send file info
+                        textBox1.Text = "Sending file info... " + progress;
+                        //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
+                        byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
+                        byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
+                        byte[] fileLength = BitConverter.GetBytes(file.Length);
+                        string DateTime = file.LastWriteTime.ToString();
+                        byte[] fileDateTime = ASCIIEncoding.ASCII.GetBytes(DateTime);
+                        byte[] fileDateTimeLength = BitConverter.GetBytes(DateTime.Length);
+
+                        //asynchronously write files
+                        await ns.WriteAsync(fileLength, 0, fileLength.Length);
+                        await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
+                        await ns.WriteAsync(fileName, 0, fileName.Length);
+                        await ns.WriteAsync(fileDateTimeLength, 0, fileDateTimeLength.Length);
+                        await ns.WriteAsync(fileDateTime, 0, fileDateTime.Length);
+
+                        textBox1.Text = "Sending..." + progress;
+                        progressBar1.Style = ProgressBarStyle.Continuous;
+                        int read = 0;
+                        int totalWritten = 0;
+                        byte[] buffer = new byte[32 * 1024]; // 32k chunks
+                        while ((read = await fileStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
-                            MessageBox.Show(E.ToString());
-                            resetControls();
+                            await ns.WriteAsync(buffer, 0, read);
+                            totalWritten += read;
+                            progressBar1.Value = (int)((100d * totalWritten) / file.Length);
                         }
 
-                        //listener.Shutdown(SocketShutdown.Both);
+
+                        textBox1.Text = "Seeing if receiver is done " + progress;
+                        byte[] sent = new byte[1];
+                        await ns.ReadAsync(sent, 0, 1);
+                        while (sent[0] != 4)
+                        {
+                            await ns.ReadAsync(sent, 0, 1);
+                            textBox1.Text = "Receiver Not Done " + progress;
+                        }
+                        ns.WriteByte(1);
+
+                        //MessageBox.Show("Sending complete!");
+                        textBox1.Text = "Sending complete! " + progress;
+                        resetControls();
                     }
                 }
                 catch (Exception E)
@@ -158,10 +149,15 @@ namespace P2P
                     MessageBox.Show(E.ToString());
                     resetControls();
                 }
+
+                // Close client Socket using the 
+                // Close() method. After closing, 
+                // we can use the closed Socket  
+                // for a new Client Connection 
                 listener.Close();
             }
 
-            MessageBox.Show("Close");
+            MessageBox.Show("Sent all files");
             this.Close();
         }
     }
