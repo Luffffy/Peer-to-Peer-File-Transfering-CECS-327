@@ -80,7 +80,7 @@ namespace P2P
                     string temp2 = ASCIIEncoding.ASCII.GetString(fileDateTimeBytes);
                     MessageBox.Show(temp2);
                     fileLastModified = DateTime.Parse(temp2);
-                    
+
                     textBox1.Text = "Receiving...";
                     progressBar1.Style = ProgressBarStyle.Continuous;
                     progressBar1.Value = 0;
@@ -88,67 +88,79 @@ namespace P2P
                     int totalRead = 0;
                     byte[] buffer = new byte[32 * 1024];
 
-                    /*
-                    if(File.Exists(folderName + "\\" + fileName))
+
+                    if (File.Exists(folderName + "\\" + fileName))
                     {
-                        fs = File.Open(folderName + "\\" + fileName, FileMode.Append);
-                    }
-                    else */
-                    using (FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.Append, FileAccess.Write)) 
-                    {
-                        
-                        if(File.Exists(folderName + "\\" + fileName))
+                        var existingLastModified = File.GetLastWriteTime(folderName + "\\" + fileName);
+
+                        int compare = DateTime.Compare(existingLastModified, fileLastModified);
+                        if (compare < 0) //if Existing file is earlier than
                         {
-                            var existingLastModified = File.GetLastWriteTime(folderName + "\\" + fileName);
-                            
-                            int compare = DateTime.Compare(existingLastModified, fileLastModified);
-                            if (compare < 0) //if Existing file is earlier than
+                            File.Delete(folderName + "\\" + fileName);
+                            FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
+                            //FileStream temp = File.Open(folderName + "\\" + fileName, FileMode.Open);
+                            //File.WriteAllText(folderName + "\\" + fileName, string.Empty);
+                            while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
                             {
-                                FileStream temp = File.Open(folderName + "\\" + fileName, FileMode.Open);
-                                while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    await fs.WriteAsync(buffer, 0, read);
-                                    totalRead += read;
-                                    int a = (int)((100d * totalRead) / fileLength);
-                                    if (a == 100)
-                                        break;
-                                    progressBar1.Value = (int)((100d * totalRead) / fileLength);
-                                }
-                            }
-                            else if (compare == 0) //if Existing file is same time
-                            {
-                                //don't overwrite
-                                var tempFile = Path.GetTempFileName();
-                                FileStream temp = File.Open(tempFile, FileMode.Open);
-                                while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    await fs.WriteAsync(buffer, 0, read);
-                                    totalRead += read;
-                                    int a = (int)((100d * totalRead) / fileLength);
-                                    if (a == 100)
-                                        break;
-                                    //progressBar1.Value = (int)((100d * totalRead) / fileLength);
-                                }
-                            }
-                            else //if Existing file is later than
-                            {
-                                //don't overwrite
-                                var tempFile = Path.GetTempFileName();
-                                FileStream temp = File.Open(tempFile, FileMode.Open);
-                                while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    await fs.WriteAsync(buffer, 0, read);
-                                    totalRead += read;
-                                    int a = (int)((100d * totalRead) / fileLength);
-                                    if (a == 100)
-                                        break;
-                                    //progressBar1.Value = (int)((100d * totalRead) / fileLength);
-                                }
+                                await fs.WriteAsync(buffer, 0, read);
+                                totalRead += read;
+                                int a = (int)((100d * totalRead) / fileLength);
+                                if (a == 100)
+                                    break;
+                                progressBar1.Value = (int)((100d * totalRead) / fileLength);
                             }
                         }
-                        
+                        else if (compare == 0) //if Existing file is same time
+                        {
+                            //don't overwrite
+                            var tempFile = Path.GetTempFileName();
+                            FileStream temp = File.Open(tempFile, FileMode.Open);
+                            FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
+                            while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                            {
+                                await fs.WriteAsync(buffer, 0, read);
+                                totalRead += read;
+                                int a = (int)((100d * totalRead) / fileLength);
+                                if (a == 100)
+                                    break;
+                                //progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                            }
+                        }
+                        else //if Existing file is later than
+                        {
+                            //don't overwrite
+                            var tempFile = Path.GetTempFileName();
+                            FileStream temp = File.Open(tempFile, FileMode.Open);
+                            FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
+                            while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                            {
+                                await fs.WriteAsync(buffer, 0, read);
+                                totalRead += read;
+                                int a = (int)((100d * totalRead) / fileLength);
+                                if (a == 100)
+                                    break;
+                                //progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                            }
+                        }
+
+
                     }
-                    
+                    else
+                    {
+                        FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
+                        //FileStream temp = File.Open(folderName + "\\" + fileName, FileMode.Open);
+                        File.WriteAllText(folderName + "\\" + fileName, string.Empty);
+                        while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fs.WriteAsync(buffer, 0, read);
+                            totalRead += read;
+                            int a = (int)((100d * totalRead) / fileLength);
+                            if (a == 100)
+                                break;
+                            progressBar1.Value = (int)((100d * totalRead) / fileLength);
+                        }
+                    }
+
                     textBox1.Text = "Done Receiving...";
                     ns.WriteByte(4);
                     byte[] received = new byte[1];
@@ -158,17 +170,12 @@ namespace P2P
                         await ns.ReadAsync(received, 0, 1);
                         textBox1.Text = "Waiting for response from Sender";
                     }
-
-                    //fs.Dispose();
-                    //client.Close();
                     resetControls();
 
-                   
+
                 }
                 catch (Exception E)
                 {
-
-                    //fs.Dispose();
                     client.Close();
                     listener.Stop();
                     resetControls();

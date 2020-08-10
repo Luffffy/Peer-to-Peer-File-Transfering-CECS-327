@@ -28,7 +28,6 @@ namespace P2P
 
         void resetControls()
         {
-            //textBox1.Enabled = textBox2.Enabled = button1.Enabled = true;
             textBox1.Text = "Waiting for Connection";
             progressBar1.Value = 0;
             progressBar1.Style = ProgressBarStyle.Continuous;
@@ -42,12 +41,6 @@ namespace P2P
 
             foreach (var i in IPs)
             {
-                // Establish the local endpoint  
-                // for the socket. Dns.GetHostName 
-                // returns the name of the host  
-                // running the application. 
-                //IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
-                //IPAddress ip = ipHost.AddressList[0];
                 string ip = i;
                 IPAddress address;
                 IPAddress.TryParse(ip, out address);
@@ -63,7 +56,7 @@ namespace P2P
                 try
                 {
                     textBox1.Text = "Connecting...";
-                    int x = 1;
+                    int x = 0;
                     int totalFiles = filePaths.Length;
                     TcpClient client = new TcpClient();
                     await client.ConnectAsync(address, PORT);
@@ -74,9 +67,6 @@ namespace P2P
                         string progress = x + "/" + totalFiles;
                         try
                         {
-
-                            //await listener.ConnectAsync(localEndPoint);
-                            //listener.SendFile(n);
                             textBox1.Text = "Sending connecting Info... " + progress;
                             NetworkStream ns = client.GetStream();
                             FileInfo file;
@@ -92,29 +82,26 @@ namespace P2P
                             {
                                 textBox1.Text = "Receiver Not Ready " + progress;
                                 await ns.ReadAsync(permission, 0, 1);
-                                
+
                             }
                             ns.WriteByte(1);
                             permission[0] = 0;
                             // Send file info
                             textBox1.Text = "Sending file info... " + progress;
-                            {   //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
-                                byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
-                                //int t = fileName.Length; 
-                                byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
-                                byte[] fileLength = BitConverter.GetBytes(file.Length);
-                                string DateTime = file.LastWriteTime.ToString();
-                                MessageBox.Show(DateTime);
-                                byte[] fileDateTime = ASCIIEncoding.ASCII.GetBytes(DateTime);
-                                byte[] fileDateTimeLength = BitConverter.GetBytes(DateTime.Length);
-                                //byte[] fileLastModified = BitConverter.GetBytes(file.LastWriteTime.Ticks);
-                                await ns.WriteAsync(fileLength, 0, fileLength.Length);
-                                await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
-                                await ns.WriteAsync(fileName, 0, fileName.Length);
-                                await ns.WriteAsync(fileDateTimeLength, 0, fileDateTimeLength.Length);
-                                await ns.WriteAsync(fileDateTime, 0, fileDateTime.Length);
-                                //await ns.WriteAsync(fileLastModified, 0, fileLastModified.Length);
-                            }
+                            //https://condor.depaul.edu/sjost/nwdp/notes/cs1/CSDatatypes.htm
+                            byte[] fileName = ASCIIEncoding.ASCII.GetBytes(file.Name);
+                            byte[] fileNameLength = BitConverter.GetBytes(fileName.Length);
+                            byte[] fileLength = BitConverter.GetBytes(file.Length);
+                            string DateTime = file.LastWriteTime.ToString();
+                            byte[] fileDateTime = ASCIIEncoding.ASCII.GetBytes(DateTime);
+                            byte[] fileDateTimeLength = BitConverter.GetBytes(DateTime.Length);
+
+                            await ns.WriteAsync(fileLength, 0, fileLength.Length);
+                            await ns.WriteAsync(fileNameLength, 0, fileNameLength.Length);
+                            await ns.WriteAsync(fileName, 0, fileName.Length);
+                            await ns.WriteAsync(fileDateTimeLength, 0, fileDateTimeLength.Length);
+                            await ns.WriteAsync(fileDateTime, 0, fileDateTime.Length);
+
 
 
 
@@ -134,7 +121,7 @@ namespace P2P
                                 progressBar1.Value = (int)((100d * totalWritten) / file.Length);
                             }
 
-                            
+
                             textBox1.Text = "Seeing if receiver is done " + progress;
                             byte[] sent = new byte[1];
                             await ns.ReadAsync(sent, 0, 1);
@@ -144,16 +131,16 @@ namespace P2P
                                 textBox1.Text = "Receiver Not Done " + progress;
                             }
                             ns.WriteByte(1);
-                            
+
 
                             //ns.WriteByte(0);
                             //MessageBox.Show(read + " " + totalWritten);
                             //listener.Shutdown(SocketShutdown.Both);
-                            
+
                             //MessageBox.Show("Sending complete!");
                             textBox1.Text = "Sending complete! " + progress;
                             resetControls();
-                            
+
 
 
                         }
@@ -162,7 +149,7 @@ namespace P2P
                             MessageBox.Show(E.ToString());
                             resetControls();
                         }
-                        
+
                         //listener.Shutdown(SocketShutdown.Both);
                     }
                 }
