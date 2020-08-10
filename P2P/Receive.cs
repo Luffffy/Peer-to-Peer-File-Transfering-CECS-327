@@ -72,12 +72,14 @@ namespace P2P
                     await ns.ReadAsync(fileNameBytes, 0, fileNameBytes.Length);
                     await ns.ReadAsync(fileDateTimeLengthBytes, 0, 4);
                     fileDateTimeBytes = new byte[BitConverter.ToInt32(fileDateTimeLengthBytes, 0)];
-                    await ns.WriteAsync(fileDateTimeBytes, 0, fileDateTimeBytes.Length);
+                    await ns.ReadAsync(fileDateTimeBytes, 0, fileDateTimeBytes.Length);
 
 
                     fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
                     fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
-                    fileLastModified = DateTime.Parse(ASCIIEncoding.ASCII.GetString(fileDateTimeBytes));
+                    string temp2 = ASCIIEncoding.ASCII.GetString(fileDateTimeBytes);
+                    MessageBox.Show(temp2);
+                    fileLastModified = DateTime.Parse(temp2);
                     
                     textBox1.Text = "Receiving...";
                     progressBar1.Style = ProgressBarStyle.Continuous;

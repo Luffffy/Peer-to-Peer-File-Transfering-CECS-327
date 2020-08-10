@@ -22,7 +22,7 @@ namespace P2P
             InitializeComponent();
             HashTable = new DHT(10);
             folderName = "";
-            //HashTable.Add("Laptop", "192.168.1.184");
+            HashTable.Add("Laptop", "192.168.1.184");
             //HashTable.Add("Desktop", "192.168.1.61");
         }
 
