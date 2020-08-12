@@ -65,17 +65,21 @@ namespace P2P
                     byte[] fileDateTimeBytes;
                     byte[] fileDateTimeLengthBytes = new byte[4];
 
+                    //Read the fileLengthBytes
                     await ns.ReadAsync(fileLengthBytes, 0, 8);
 
+                    //read the fileNameLength to get the buffer size for the fileName string
                     await ns.ReadAsync(fileNameLengthBytes, 0, 4);
                     fileNameBytes = new byte[BitConverter.ToInt32(fileNameLengthBytes, 0)];
                     await ns.ReadAsync(fileNameBytes, 0, fileNameBytes.Length);
 
+                    //read the fileDateTimeLength to get the buffer size for the fileDateTime string
                     await ns.ReadAsync(fileDateTimeLengthBytes, 0, 4);
                     fileDateTimeBytes = new byte[BitConverter.ToInt32(fileDateTimeLengthBytes, 0)];
                     await ns.ReadAsync(fileDateTimeBytes, 0, fileDateTimeBytes.Length);
 
 
+                    //convert byte[] to their file types
                     fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
                     fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
                     string temp2 = ASCIIEncoding.ASCII.GetString(fileDateTimeBytes);
@@ -97,6 +101,8 @@ namespace P2P
                         int compare = DateTime.Compare(existingLastModified, fileLastModified);
                         if (compare < 0) //if Existing file is earlier than delete and make a new file
                         {
+                            //delete the existing and create a new updated one
+                            //append just adds onto existing files so txt files get extra stuff
                             File.Delete(folderName + "\\" + fileName);
                             FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
                             while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
@@ -147,7 +153,6 @@ namespace P2P
                     else
                     {
                         FileStream fs = File.Open(folderName + "\\" + fileName, FileMode.OpenOrCreate, FileAccess.Write);
-                        //FileStream temp = File.Open(folderName + "\\" + fileName, FileMode.Open);
                         File.WriteAllText(folderName + "\\" + fileName, string.Empty);
                         while ((read = await ns.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {

@@ -1,0 +1,10 @@
+This lab was very hard to do and I initially did it wrong. 
+When I thought I was done the first time, I thought I just needed to be able to send one singular file and to receive one singular file.
+And I was manually selecting a file to send.
+I reread the instuctions and I had to go back and make it so that I would be sending a set of files, basically a folder.
+I didn't have a partner to work with which was honestly fine. This was doable on a computer and laptop and sending files between the two.
+I would have prefered to have one though, but the people I asked wanted to work in Python and I wanted to work in C#.
+The async methods really helped in sending files and its really nice that the Socket classes have async and non-async methods to use.
+Manually inputting the IP address when debugging was a pain so I hard coded it in during my debugging.
+I had fun with this assignment though. I really like debugging and finding out which part of my code isn't working. 
+The many resources I used online helped me though this project. Reading the documentation for the methods really helped.
