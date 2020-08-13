@@ -83,7 +83,7 @@ namespace P2P
                     fileLength = BitConverter.ToInt64(fileLengthBytes, 0);
                     fileName = ASCIIEncoding.ASCII.GetString(fileNameBytes);
                     string temp2 = ASCIIEncoding.ASCII.GetString(fileDateTimeBytes);
-                    MessageBox.Show(temp2);
+                    //MessageBox.Show(temp2);
                     fileLastModified = DateTime.Parse(temp2);
 
                     textBox1.Text = "Receiving...";

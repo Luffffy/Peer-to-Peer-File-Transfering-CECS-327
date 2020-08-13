@@ -155,9 +155,10 @@ namespace P2P
                 // we can use the closed Socket  
                 // for a new Client Connection 
                 listener.Close();
+                MessageBox.Show("Sent all files");
             }
 
-            MessageBox.Show("Sent all files");
+            
             this.Close();
         }
     }
